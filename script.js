@@ -53,7 +53,7 @@ const shopPrizes=[
  {id:'eraser-icecream',name:'Ice cream eraser',tag:'A sweet little scoop',cost:15},
  {id:'eraser-strawberry',name:'Strawberry eraser',tag:'Berry cute',cost:15},
  {id:'highlighter-set',name:'Pastel highlighter set',tag:'Yellow, pink, mint & lavender',cost:45}
-].map((p,art)=>({...p,art,artGrid:5,artSheet:'assets/fruity-stationery.png',color:'#fbf8fc'})));
+].map((p,art)=>({...p,art,artGrid:5,artSheet:'fruity-stationery.png',color:'#fbf8fc'})));
 const prizes=[...clawPrizes,...shopPrizes];
 const shopCategories=[
  {name:'Mints',prefixes:['ice-']},
@@ -87,7 +87,7 @@ function shopArt(prize,cls='prize-art'){
  const crop=prize.artGrid===5?stationeryCrops[prize.art]:[
   (prize.art%4)*313.5+5,Math.floor(prize.art/4)*313.5+5,303.5,303.5
  ];
- catalogImage(prize.artSheet||'assets/arcade-prizes.png').then(image=>{
+  catalogImage(prize.artSheet||'arcade-prizes.png').then(image=>{
   const ctx=art.getContext('2d');const [sx,sy,sw,sh]=crop;
   const scale=340/Math.max(sw,sh),width=sw*scale,height=sh*scale;
   ctx.drawImage(image,sx,sy,sw,sh,(360-width)/2,(360-height)/2,width,height);
