@@ -3,7 +3,7 @@ Open index.html in a modern browser. No libraries, installation, or network conn
 
 Arrow keys aim in 3D; Space, G, or DROP & GRAB lowers the claw at your aim, including after clicking an arrow button. Click the glass to focus it. After adding a task, focus returns to the machine. Text fields retain normal arrow-key editing. The main button explains whether you need to add a task, open your caught prize, view your current task, or start another round. Aiming remains available during missions; another grab waits for task completion.
 
-The chamber starts with a full 52-prize pile, spread into the sides and corners with the drop chute kept clear. Adding or removing tasks does not change or rearrange the prize pile. Grabs remove one prize at a time without automatically refilling the pile. The prizes form a loose, overlapping two-layer heap with mixed varieties in each layer. Each lower prize unlocks when the prize directly above its stack position has been grabbed; other top prizes do not block it. The red ring marks the drop location and follows the height of the available prize under the claw. Misses return empty without changing tasks or rewards. Prize positions stay fixed between catches. The layers have no shelf between them.
+The chamber starts with a full 55-prize pile, spread into the sides and corners with the drop chute kept clear. Each full stock has 33 stuffies and 22 capsules—an exact 3:2 ratio—with capsules rotating through eight pastel colors. Adding or removing tasks does not change or rearrange the prize pile. Grabs remove one prize at a time without automatically refilling the pile, so the ratio of the remaining prizes can change as individual prizes are caught. The prizes form a loose, overlapping two-layer heap with mixed varieties in each layer. Each lower prize unlocks when the prize directly above its stack position has been grabbed; other top prizes do not block it. The red ring marks the drop location and follows the height of the available prize under the claw. Misses return empty without changing tasks or rewards. Prize positions stay fixed between catches. The layers have no shelf between them.
 
 A successful catch selects a current to-do, which remains listed and protected from removal until you finish it. Completing that task removes exactly one caught prize and awards the stuffy or tickets. Remaining prizes select only remaining tasks. With no tasks, grabbing pauses until you add one. New tasks can still be added when the chamber is full.
 
@@ -11,7 +11,7 @@ Redeem tickets for virtual prizes and view My collection. Progress stays in this
 
 Files: index.html, style.css, script.js, scene.js. The chamber uses a dependency-free canvas renderer with 3D coordinates, perspective, rounded shaded prizes, rails, and a square prize chute.
 
-When the final caught prize is completed and no prizes remain, “Restock claw machine” appears. Clicking it adds a fresh 52-prize pile without changing tasks, tickets, or collection. Adding tasks never refills an empty machine.
+When the final caught prize is completed and no prizes remain, “Restock claw machine” appears. Clicking it adds a fresh 55-prize pile without changing tasks, tickets, or collection. Adding tasks never refills an empty machine.
 
 The delivered prize and reward reveal reuse the chamber’s drawing routines. The caught variety, capsule color, and tilt are saved, so the prize retains its appearance after delivery and refresh.
 

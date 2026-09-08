@@ -1,6 +1,8 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const colors=['#f296c1','#b7a0ec','#f4d474','#89d3c1','#90c9ec'];
+const capsuleColors=['#f6a7c9','#c9b7f4','#f7db86','#9dddc9','#a6d8f4','#f7b9a6','#d9c5ee','#b7e3ad'];
+const colors=capsuleColors;
+const FULL_PILE_SIZE=55;
 const clawPrizes=[
  {id:'bear',name:'Honey bear',tag:'A cuddly study buddy',color:'#fff0d9'},
  {id:'frog',name:'Pocket frog',tag:'Tiny friend. Big energy.',color:'#e4f3e5'},
@@ -10,6 +12,25 @@ const clawPrizes=[
  {id:'bunny',name:'Marshmallow bunny',tag:'Soft ears and pink paws',color:'#fbeaf3'},
  {id:'chick',name:'Sunny chick',tag:'A pocketful of sunshine',color:'#fff3bc'}
 ];
+const plushKinds=clawPrizes.map(prize=>prize.id);
+function mixedVariety(index){
+ const place=index%5;
+ if(place>=3)return null;
+ return plushKinds[(Math.floor(index/5)*3+place)%plushKinds.length];
+}
+function capsuleColorForIndex(index){
+ const capsuleNumber=Math.floor(index/5)*2+(index%5-3);
+ return capsuleColors[capsuleNumber%capsuleColors.length];
+}
+function applyPrizeMix(){
+ let index=0;
+ for(const placement of state.placements){
+  if(`${placement.layer}:${placement.slot}`===state.pendingPrizeKey)continue;
+  placement.prize=mixedVariety(index);
+  placement.color=placement.prize?colors[index%colors.length]:capsuleColorForIndex(index);
+  index++;
+ }
+}
 const shopPrizes=[
  {id:'ice-coolmint',name:'Ice Breakers mints',tag:'Coolmint',cost:25},
  {id:'ice-wintergreen',name:'Ice Breakers mints',tag:'Wintergreen',cost:25},
@@ -160,16 +181,17 @@ function ensurePlacements(){
   if(['capsule','task'].includes(state.phase)&&state.active&&!state.activeTaskId){state.tasks.push(state.active);state.activeTaskId=`task-${++taskSerial}`;state.taskIds.push(state.activeTaskId)}
   state.placements=[];state.prizeMode=3;for(let i=0;i<state.tasks.length*3;i++)addOnePrize();layoutPrizes();save();
  }
- if(state.pileStyle!==1){for(const p of state.placements){if(`${p.layer}:${p.slot}`!==state.pendingPrizeKey)p.prize=mixedVariety(p.slot,p.layer)}layoutPrizes();state.pileStyle=1;save()}
- if(state.plushVarieties!==2){for(const p of state.placements){if(`${p.layer}:${p.slot}`!==state.pendingPrizeKey)p.prize=mixedVariety(p.slot,p.layer)}state.plushVarieties=2;save()}
- if(state.fullPileVersion!==1){while(state.placements.length<52)addOnePrize();layoutPrizes();state.fullPileVersion=1;save()}
+ if(state.pileStyle!==1){layoutPrizes();state.pileStyle=1;save()}
+ if(state.plushVarieties!==2){state.plushVarieties=2;save()}
+ if(state.fullPileVersion!==2){if(!Number.isInteger(state.fullPileVersion))while(state.placements.length<FULL_PILE_SIZE)addOnePrize();layoutPrizes();state.fullPileVersion=2;save()}
+ if(state.prizeMixVersion!==1){applyPrizeMix();state.prizeMixVersion=1;save()}
 }
-function mixedVariety(slot,layer){return ['bear','dog',null,'cat','frog','bunny','unicorn','chick'][(slot+layer*3)%8]}
 function addOnePrize(){
  const bottom=state.placements.filter(p=>p.layer===0).length,top=state.placements.length-bottom;
  for(const layer of (bottom>top?[1,0]:[0,1]))for(let slot=0;slot<45;slot++)if(!state.placements.some(p=>p.slot===slot&&p.layer===layer)){
   const n=state.prizeSerial=(state.prizeSerial||0)+1;
-  state.placements.push({slot,layer,prize:mixedVariety(slot,layer),color:colors[n%colors.length]});return;
+  const mixIndex=state.placements.length,prize=mixedVariety(mixIndex);
+  state.placements.push({slot,layer,prize,color:prize?colors[n%colors.length]:capsuleColorForIndex(mixIndex)});return;
  }
 }
 function pilePositions(dense=false){
@@ -247,8 +269,8 @@ function grabAction(){
 }
 function restockMachine(){
  if(busy||state.placements.length||state.pendingPrizeKey)return;
- for(let i=0;i<52;i++)addOnePrize();layoutPrizes();save();fillCapsules();render();
- $('machine-status').textContent='RESTOCKED!';$('glass').focus({preventScroll:true});toast('52 new prizes! Your tasks, tickets, and collection are unchanged.');
+ for(let i=0;i<FULL_PILE_SIZE;i++)addOnePrize();layoutPrizes();save();fillCapsules();render();
+ $('machine-status').textContent='RESTOCKED!';$('glass').focus({preventScroll:true});toast('55 new prizes! 33 stuffies and 22 pastel capsules are ready.');
 }
 ensurePlacements();$('restock').onclick=restockMachine;$('grab').onclick=grabAction;document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>move(b.dataset.dir));function handleGameKey(e){
  if(activeTab!=='machine-panel'||e.target.closest('[role="tab"]'))return;
