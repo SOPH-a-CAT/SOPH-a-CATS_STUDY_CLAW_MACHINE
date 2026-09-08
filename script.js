@@ -13,22 +13,24 @@ const clawPrizes=[
  {id:'chick',name:'Sunny chick',tag:'A pocketful of sunshine',color:'#fff3bc'}
 ];
 const plushKinds=clawPrizes.map(prize=>prize.id);
-function mixedVariety(index){
- const place=index%5;
- if(place>=3)return null;
- return plushKinds[(Math.floor(index/5)*3+place)%plushKinds.length];
-}
-function capsuleColorForIndex(index){
- const capsuleNumber=Math.floor(index/5)*2+(index%5-3);
- return capsuleColors[capsuleNumber%capsuleColors.length];
-}
+function mixedVariety(index){return plushKinds[index%plushKinds.length]}
+function capsuleColorForIndex(index){return capsuleColors[index%capsuleColors.length]}
 function applyPrizeMix(){
- let index=0;
- for(const placement of state.placements){
-  if(`${placement.layer}:${placement.slot}`===state.pendingPrizeKey)continue;
-  placement.prize=mixedVariety(index);
-  placement.color=placement.prize?colors[index%colors.length]:capsuleColorForIndex(index);
-  index++;
+ const available=state.placements.filter(placement=>`${placement.layer}:${placement.slot}`!==state.pendingPrizeKey);
+ const capsuleTarget=Math.round(available.length*2/5),capsulePlacements=[];
+ const layers=[0,1].map(layer=>available.filter(placement=>placement.layer===layer).sort((a,b)=>a.slot-b.slot));
+ // Spread two capsules through every five positions in both layers. Top-layer
+ // capsules stay visible while bottom-layer capsules appear as stacks uncover.
+ for(const layer of layers)layer.forEach((placement,index)=>{if(index%5===1||index%5===3)capsulePlacements.push(placement)});
+ const capsuleSet=new Set(capsulePlacements.slice(0,capsuleTarget));
+ if(capsuleSet.size<capsuleTarget){
+  const extras=[...layers[1],...layers[0]].filter(placement=>!capsuleSet.has(placement));
+  for(const placement of extras){capsuleSet.add(placement);if(capsuleSet.size===capsuleTarget)break}
+ }
+ let plushIndex=0,capsuleIndex=0;
+ for(const placement of available){
+  if(capsuleSet.has(placement)){placement.prize=null;placement.color=capsuleColorForIndex(capsuleIndex++)}
+  else{placement.prize=mixedVariety(plushIndex);placement.color=colors[plushIndex++%colors.length]}
  }
 }
 const shopPrizes=[
@@ -184,14 +186,13 @@ function ensurePlacements(){
  if(state.pileStyle!==1){layoutPrizes();state.pileStyle=1;save()}
  if(state.plushVarieties!==2){state.plushVarieties=2;save()}
  if(state.fullPileVersion!==2){if(!Number.isInteger(state.fullPileVersion))while(state.placements.length<FULL_PILE_SIZE)addOnePrize();layoutPrizes();state.fullPileVersion=2;save()}
- if(state.prizeMixVersion!==1){applyPrizeMix();state.prizeMixVersion=1;save()}
+ if(state.prizeMixVersion!==2){applyPrizeMix();state.prizeMixVersion=2;save()}
 }
 function addOnePrize(){
  const bottom=state.placements.filter(p=>p.layer===0).length,top=state.placements.length-bottom;
  for(const layer of (bottom>top?[1,0]:[0,1]))for(let slot=0;slot<45;slot++)if(!state.placements.some(p=>p.slot===slot&&p.layer===layer)){
   const n=state.prizeSerial=(state.prizeSerial||0)+1;
-  const mixIndex=state.placements.length,prize=mixedVariety(mixIndex);
-  state.placements.push({slot,layer,prize,color:prize?colors[n%colors.length]:capsuleColorForIndex(mixIndex)});return;
+  state.placements.push({slot,layer,prize:mixedVariety(n),color:colors[n%colors.length]});return;
  }
 }
 function pilePositions(dense=false){
@@ -269,7 +270,7 @@ function grabAction(){
 }
 function restockMachine(){
  if(busy||state.placements.length||state.pendingPrizeKey)return;
- for(let i=0;i<FULL_PILE_SIZE;i++)addOnePrize();layoutPrizes();save();fillCapsules();render();
+ for(let i=0;i<FULL_PILE_SIZE;i++)addOnePrize();applyPrizeMix();layoutPrizes();save();fillCapsules();render();
  $('machine-status').textContent='RESTOCKED!';$('glass').focus({preventScroll:true});toast('55 new prizes! 33 stuffies and 22 pastel capsules are ready.');
 }
 ensurePlacements();$('restock').onclick=restockMachine;$('grab').onclick=grabAction;document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>move(b.dataset.dir));function handleGameKey(e){
